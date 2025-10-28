@@ -354,23 +354,27 @@ To conclude, we see that the adjacency list data structures grow the most in the
 
 | N    | time (ms) |
 |------|-----------|
-| 500  |           |
-| 1000 |           |
-| 1500 |           |
-| 2000 |           |
-| 2500 |           |
-| 3000 |           |
+| 500  |  671      |
+| 1000 |    2618   |
+| 1500 |    6480   |
+| 2000 |   11020   |
+| 2500 |   17720   |
+| 3000 |   26050   |
 
 
 ### Comparison of Theoretical and Empirical Results - Unrestricted Alignment
 
-- Theoretical order of growth: 
-- Empirical order of growth (if different from theoretical): 
+- Theoretical order of growth: **O(mn)**
+- Empirical order of growth (if different from theoretical): **O(mn)**
+- Constant of Proportionality: 0.002777774074074074
 
 
-![](fill-me-in.png)
 
-*Fill me in*
+![img](baseline_analysis.png)
+
+As you can see here, my empirical was a near perfect match to my theoretical. For my testing, because the empirical table is one dimensional, I made the graph only vary by N for simplicity as well. This is still completely valid because N is still a manifestation of both m and n.
+
+So we see that N^2 is effectively m * n in this context. This was exactly as a predicted. This algorithm runs in quadratic time because the whole m x n Matrix (in this case simply N x N Matrix).
 
 ## Core
 
@@ -509,30 +513,39 @@ That being said. The space complexity of this AlignmentCalculator object must gr
 
 ### Empirical Data - Banded Alignment
 
+I ran this analysis at a constant k, bandwidth, of 50.
+
 | N     | time (ms) |
 |-------|-----------|
-| 100   |           |
-| 1000  |           |
-| 5000  |           |
-| 10000 |           |
-| 15000 |           |
-| 20000 |           |
-| 25000 |           |
-| 30000 |           |
+| 100   |   25.86   |
+| 1000  |   231.0   |
+| 5000  |    1258   |
+| 10000 |    2835   |
+| 15000 |    4444   |
+| 20000 |    5955   |
+| 25000 |    7339   |
+| 30000 |    8979   |
 
 ### Comparison of Theoretical and Empirical Results - Banded Alignment
 
-- Theoretical order of growth: 
-- Empirical order of growth (if different from theoretical): 
+- Theoretical order of growth: **O(ks)**
+- Empirical order of growth (if different from theoretical): **O(ks)**
+- Constant of Proportionality: 0.005528941666666666
 
 
-![](fill-me-in.png)
+![img](core_analysis.png)
 
-*Fill me in*
+As you can see, my empirical matches nearly perfectly with the theoretical. I ran these measurement at varying string length N (s in the case of my theoretical) and at a constant bandwidth k = 50. We would expect that the trend would be linear at constant k and varying N, and this is exactly what we see.
+
+It took the unrestricted algorithm 26050 milliseconds to run at N = 3000 while the banded algorithm at k = 50 and N = 5000 only took 1258 milliseconds. That is substantially better. Had I tried to run the unrestricted algorithm at 30000, it would have taken a very long time.
+
+We see that that if we keep a low value of k, we can effectively compute the edit distance using the banded heuristic in linear time! This is because the time complexity is O(ks), so when k become constant, in terms of Big O, k ~ 1. This is how we end up with and observed O(s) or O(N).
 
 ### Relative Performance Of Unrestricted Alignment versus Banded Alignment
 
-*Fill me in*
+It is beyond clear that the Banded Alignment is substantially more performant than Unrestricted Alignment when a small enough value of k is used. This is evident in the fact that the Banded Alignment scales linearly at constant k, and the Unrestricted algorithm scales quadratically!
+
+Linear (or at least very close to linear in our case) scaling is a lot better for analyzing large sequences than the quadratic alternative. It seems clear to me why this heuristic would be useful for biologists trying to quickly compute the edit distance between two genomes.
 
 
 ## Stretch 1
