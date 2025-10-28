@@ -541,17 +541,53 @@ That being said. The space complexity of this AlignmentCalculator object must gr
 
 I did this with Spencer Zaugg on 10/27/2025.
 
-I will simply parse the fasta file by using string manipulation techniques available in python such as split (and regular expressions if necessary). After that, I will simply run the edit distance algorithm, comparing unknown to each of the sequences to find which one is the closest. I will print out the sequences and their alignment.
+I will simply parse the fasta file by using string manipulation techniques available in python such as split (and regular expressions if necessary). After that, I will simply run the edit distance algorithm, comparing unknown to each of the sequences to find which one is the closest. I will print out the sequences and their alignment. The rat looks really close to the sequence.
 
 ### Code
 
 ```python
-# Fill me in
+from alignment import align
+
+with open("lct_exon8.txt") as f:
+    lines = f.readlines()
+
+archive = {}
+next_seq = None
+unknown_key = ">unknown.1_unknown_8_17"
+
+real_names = {
+    ">uc002tuu.1_hg38_8_17 1551 1 1 chr2:135808443-135809993-" : "Human",
+    ">uc002tuu.1_panTro4_8_17 1551 1 1 chr2B:139763388-1397" : "Chimpanzee",
+    ">uc002tuu.1_rheMac3_8_17 1551 1 1 chr13:116031545-1160" : "Rhesus Macque",
+    ">uc002tuu.1_canFam3_8_17 1551 1 1 chr19:38591470-385" : "Dog",
+    ">uc002tuu.1_rn5_8_17 1551 1 1 chr13:50097887-500" : "Rat",
+    ">uc002tuu.1_mm10_8_17 1551 1 1 chr1:128299839-1283" : "Mouse"
+}
+
+for line in lines:
+    if line[0] == '>':
+        next_seq = line.strip()
+    else:
+        archive[next_seq] = line.strip()
+
+for key in archive:
+    if key != unknown_key:
+        score, aligned_seq1, aligned_seq2 = align(archive[unknown_key], archive[key])
+        print(f"Alignment score between Unknown and {real_names[key]}: {score}")
 ```
 
 ### Alignment Scores
 
-*Fill me in*
+Alignment score between Unknown and Human: -3113
+Alignment score between Unknown and Chimpanzee: -3097
+Alignment score between Unknown and Rhesus Macque: -3162
+Alignment score between Unknown and Dog: -3111
+Alignment score between Unknown and Rat: -4343
+Alignment score between Unknown and Mouse: -3835
+
+We can see here that the DNA of the Rat most closely aligns with that of the suspect. This is because it has the lowest edit distance by a significant margin. The Rat is the most likely creature that opened up the lock.
+
+The Rat could have opened the lock by catapulting cheese at the lock until it somehow opened it. Another possibility is that the rat was able to pick the lock with his tail. I think the Rat did it because he was trying to get some chicken. That makes the most sense.
 
 ## Stretch 2
 
