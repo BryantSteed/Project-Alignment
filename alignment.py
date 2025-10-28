@@ -25,9 +25,11 @@ def align(
     """
     dist = {i: {} for i in range(-1, len(seq1))}
     prev = {}
+    mode = {i : {} for i in range(-1, len(seq1))}
     for i, j in position_iterator(seq1, seq2, banded_width):
         calculate_distance(seq1, seq2, indel_penalty, dist, 
-                           prev, i, j, match_award, sub_penalty)
+                           prev, i, j, match_award, sub_penalty,
+                           mode, gap_open_penalty)
     edits = get_edit_sequence(seq1, seq2, prev)
     aligned_seq1, aligned_seq2 = get_sequence_alignment(seq1, seq2, gap, edits)
     score = math.inf if aligned_seq1 is None else dist[len(seq1)-1][len(seq2)-1]
@@ -84,38 +86,54 @@ def get_edit_sequence(seq1, seq2, prev):
     return edits
 
 def calculate_distance(seq1, seq2, indel_penalty, dist, 
-                       prev, i, j, match_award, sub_penalty,):
+                       prev, i, j, match_award, sub_penalty,
+                       mode, gap_open_penalty):
     if i == -1 and j == -1:
         dist[i][j] = 0
+        mode[i][j] = "m"
     elif i == -1:
-        dist[i][j] = dist[i][j-1] + indel_penalty
+        gap_modifier = gap_open_penalty if j == 0 else 0
+        dist[i][j] = dist[i][j-1] + indel_penalty + gap_modifier
         prev[i, j] = (i, j-1)
+        mode[i][j] = "i"
     elif j == -1:
-        dist[i][j] = dist[i-1][j] + indel_penalty
+        gap_modifier = gap_open_penalty if i == 0 else 0
+        dist[i][j] = dist[i-1][j] + indel_penalty + gap_modifier
         prev[i, j] = (i-1, j)
+        mode[i][j] = "d"
     else:
         get_best_distance(seq1, seq2, indel_penalty, dist, 
-                          prev, i, j, match_award, sub_penalty)
+                          prev, i, j, match_award, sub_penalty, 
+                          mode, gap_open_penalty)
 
 def get_best_distance(seq1, seq2, indel_penalty, dist, 
-                      prev, i, j, match_award, sub_penalty):
+                      prev, i, j, match_award, sub_penalty, 
+                      mode, gap_open_penalty):
     left_scenario, diag_scenario, min_scenario = \
         get_scenarios(seq1, seq2, indel_penalty, dist, 
-                      i, j, match_award, sub_penalty)
+                      i, j, match_award, sub_penalty,
+                      mode, gap_open_penalty)
     if min_scenario == diag_scenario:
         prev[i, j] = (i-1, j-1)
+        mode[i][j] = "m"
     elif min_scenario == left_scenario:
         prev[i, j] = (i, j-1)
+        mode[i][j] = "i"
     else:
         prev[i, j] = (i-1, j)
+        mode[i][j] = "d"
 
-def get_scenarios(seq1, seq2, indel_penalty, dist, i, j, match_award, sub_penalty):
+def get_scenarios(seq1, seq2, indel_penalty, dist, 
+                  i, j, match_award, sub_penalty, 
+                  mode, gap_open_penalty):
     if j in dist[i-1]:
-        up_scenario = dist[i-1][j] + indel_penalty
+        gap_modifier = gap_open_penalty if mode[i-1][j] != "d" else 0
+        up_scenario = dist[i-1][j] + indel_penalty + gap_modifier
     else:
         up_scenario = math.inf
     if j-1 in dist[i]:
-        left_scenario = dist[i][j-1] + indel_penalty
+        gap_modifier = gap_open_penalty if mode[i][j-1] != "i" else 0
+        left_scenario = dist[i][j-1] + indel_penalty + gap_modifier
     else:
         left_scenario = math.inf
     diag_modifier = match_award if seq1[i] == seq2[j] else sub_penalty
