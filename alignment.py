@@ -84,7 +84,7 @@ def get_edit_sequence(seq1, seq2, prev):
     return edits
 
 def calculate_distance(seq1, seq2, indel_penalty, dist, 
-                       prev, i, j, match_award, sub_penalty):
+                       prev, i, j, match_award, sub_penalty,):
     if i == -1 and j == -1:
         dist[i][j] = 0
     elif i == -1:
@@ -97,7 +97,8 @@ def calculate_distance(seq1, seq2, indel_penalty, dist,
         get_best_distance(seq1, seq2, indel_penalty, dist, 
                           prev, i, j, match_award, sub_penalty)
 
-def get_best_distance(seq1, seq2, indel_penalty, dist, prev, i, j, match_award, sub_penalty):
+def get_best_distance(seq1, seq2, indel_penalty, dist, 
+                      prev, i, j, match_award, sub_penalty):
     left_scenario, diag_scenario, min_scenario = \
         get_scenarios(seq1, seq2, indel_penalty, dist, 
                       i, j, match_award, sub_penalty)
