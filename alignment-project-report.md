@@ -390,11 +390,122 @@ He also wanted to use a dictionary.
 
 #### Time 
 
-*Fill me in*
+##### align - **O(ks)**
+
+My analysis will be in reference to m as the first sequence, n as the second sequence, and s as the shorter sequence.
+
+```py
+calculator = AlignmentCalculator(seq1, seq2, banded_width,   # O(m)
+                                indel_penalty, match_award, 
+                                sub_penalty, gap_open_penalty)
+dist, prev = calculator.calculate_matrix()  # O(ks)
+edits = get_edit_sequence(seq1, seq2, prev) # O(m + n)
+aligned_seq1, aligned_seq2 = get_sequence_alignment(seq1, seq2, gap, edits) # O(m + n)
+score = math.inf if aligned_seq1 is None else dist[len(seq1)-1][len(seq2)-1]
+return score, aligned_seq1, aligned_seq2
+```
+
+I have justified the instantiation of the AlignmentCalculator in the previous section. I won't do it here because it would be the same thing. That instantiation is simply O(m). However, the matrix calculation is now O(ks) where k is the bandwidth and s is the length of the shorter sequence. I will justify why computing the number of edits is the same O(m + n).
+
+The calculate_matrix() function still dominates because it is multiplicative with O(ks), making our time complexity **O(ks)**.
+
+```py
+def calculate_matrix(self):
+        for i, j in self.position_iterator():
+            self.calculate_distance(i, j)
+        return self.dist, self.prev
+
+def position_iterator(self):
+    if self.banded_width == -1:
+        for i in range(-1, len(self.seq1)):
+            for j in range(-1, len(self.seq2)):
+                yield i, j
+    else:
+        for i in range(-1, len(self.seq1)):      # O(ks) See below
+            j_start = max(-1, i - self.banded_width)
+            j_end = min(len(self.seq2) - 1, i + self.banded_width)
+            for j in range(j_start, j_end + 1):
+                yield i, j
+```
+
+Everything from the previous phase is the exact same except for this position iterator. For that reason, I **wont repeat everything** from that previous phase.
+
+It's a little difficult to visualize why exactly the number of values we iterate over scales with O(ks). If we examine a matrix with a bandwidth of 5, it essentially creates a diagonal rectangle inside of our matrix. We calculate the area of a rectangle by taking width * height = area.
+
+k is the number of cells per level of that rectangle because its the width of each band that gets created. So, s is the height because its the number of bands (kind of). While s isn't necessarily the number of bands, it makes logical sense that the overall shape of the rectangle will scale with the smallest string. For example, if my s is length 1, it will necessary constrict the width to be length 1.
+
+We can then assume that there will be approximately s * (2k + 1) iterations. This then settles down to a time complexity of O(ks)
+
+```py
+def get_edit_sequence(seq1, seq2, prev): # O(m + n) see below
+    rev_edits = []
+    i, j = len(seq1) - 1, len(seq2) - 1
+    while True:
+        if not prev.get((i, j)):
+            break
+        i_prev, j_prev = prev[(i, j)]
+        if i_prev == i - 1 and j_prev == j - 1:
+            rev_edits.append("sub")
+        elif i_prev == i and j_prev == j - 1:
+            rev_edits.append("ins")
+        else:
+            rev_edits.append("del")
+        i, j = i_prev, j_prev
+    edits = rev_edits[::-1]
+    return edits
+```
+
+To justify why getting the edit sequence (and by extension, computing the strings which is bound by the length of the edit sequence) is still O(m + n), I will abstract this as being a manhattan distance problem.
+
+In our matrix, our bands will at most shift one to the left each time. In our worst case, we could be deleting, inserting, deleting again, and doing any number of straight insertions or deletions to arrive at the corner. The issue is that when we successively do insertions followed by deletions as we make our way diagonally down the matrix, the number of edits (or travels) must be the manhattan (or taxicab) distance between those points.
+
+When we calculate manhattan distance in this diagonal fashion, it makes no difference whether or not we shift down and to the right each time or if we simply add up the lengths of the sides in question. Because of this, we can conclude that the manhattan distance between the top corner and the bottom corner is simply m + n. Because of this, we are still bound by O(m + n) here.
+
+To conclude, the O(ks) multiplicative case will dominate over over the edit iteration O(m + n). This is because even in prohibitively smaller instances of k, the manhattan distance will be squashed. For that reason, my analysis is that it will be **O(ks)** time.
 
 #### Space
 
-*Fill me in*
+##### align - **O(ks)**
+
+Again, this code is essentially the same as the previous phase, so **I will not repeat anything** that is not built on or changed by the band algorithm.
+
+```py
+calculator = AlignmentCalculator(seq1, seq2, banded_width, 
+                                     indel_penalty, match_award, 
+                                     sub_penalty, gap_open_penalty) # O (m)
+dist, prev = calculator.calculate_matrix() # O(ks)
+edits = get_edit_sequence(seq1, seq2, prev) # O(m + n)
+aligned_seq1, aligned_seq2 = get_sequence_alignment(seq1, seq2, gap, edits) # O(m + n)
+score = math.inf if aligned_seq1 is None else dist[len(seq1)-1][len(seq2)-1]
+return score, aligned_seq1, aligned_seq2
+```
+
+The initial instantiation of data structures in AlignmentCalculator is the exact same with O(m) for clear reasons, so I wont repeat over it. However, the dist and prev dictionaries are now simply O(ks) in space instead of O(mn). I will go over this. For reasons explained above, the number of edits remains bound by O(m + n). We see here that space complexity should be **O(ks)**
+
+```py
+def calculate_matrix(self):
+        for i, j in self.position_iterator(): # O(ks)
+            self.calculate_distance(i, j)
+        return self.dist, self.prev
+
+def position_iterator(self):
+    if self.banded_width == -1:
+        for i in range(-1, len(self.seq1)):
+            for j in range(-1, len(self.seq2)):
+                yield i, j
+    else:                                   # O(ks)
+        for i in range(-1, len(self.seq1)):
+            j_start = max(-1, i - self.banded_width)
+            j_end = min(len(self.seq2) - 1, i + self.banded_width)
+            for j in range(j_start, j_end + 1):
+                yield i, j
+```
+
+This is the only meaningful function that is impacted by the banded algorithm. Because of that, I won't repeat over the other ones.
+
+As I explained previously in the time analysis, the number of values we iterate over is bounded by O(ks). This also means that our data structures prev, dist, and mode also grow to be bounded by O(ks). Because of this, this function to fill out these matrices should have a space complexity of O(ks).
+
+That being said. The space complexity of this AlignmentCalculator object must grow to be bounded by O(ks). This O(ks) will dominate over the O(m + n) from the edit sequence computation (I already went over why the data structure storing the edit sequence is still O(m + n)). Our final space complexity for the banded algorithm is then **O(ks)**.
 
 ### Empirical Data - Banded Alignment
 
