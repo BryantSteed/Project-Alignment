@@ -8,7 +8,10 @@ def main(seq1: str, seq2: str):
     """
     Align the two sequences and print the score and alignment strings
     """
-    score, alignment1, alignment2 = align(seq1, seq2)
+    # score, alignment1, alignment2 = align(seq1, seq2, gap_open_penalty=10)
+    # score, alignment1, alignment2 = align(seq1, seq2)
+    # score, alignment1, alignment2 = align(seq1, seq2, match_award=0, indel_penalty=1, sub_penalty=1)
+    score, alignment1, alignment2 = align(seq1, seq2, match_award=0, indel_penalty=1, sub_penalty=1, gap_open_penalty=10)
     print(f'Score: {score}')
     print(alignment1)
     print(alignment2)

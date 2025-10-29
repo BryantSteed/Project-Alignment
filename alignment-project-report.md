@@ -616,11 +616,34 @@ This will inform me regarding the state of the analysis. I will then adjust the 
 
 ##### Sequences and Alignments
 
-*Fill me in*
+I download a txt file from the internet of 2 Nephi Chapter 12 and a txt file of Isaiah chapter 2. These are a little too long two copy paste into this report, but I have them attached here.
+
+When I ran them with the biology based default algorithm and without penalized gap openings, their score was -6245.
+
+With the biology based but penalizing gap openings as 10, their score was -5551, significantly higher.
+
+With the equal weight algorithm and not penalized gap openings, their score was 581.
+
+With the equal weight algorithm and penalizing gap openings as 10, their score was 1538. That's nearly triple the score!
+
+It is clear to me that the scores were substantially higher when using the gap opening penalties because the algorithm had to work around those initial penalties instead of taking the path of least resistance. It's also clear that when using the affine penalties, you get gap stretches that are substantially longer. However, this isn't necessarily what we would want in this case.
 
 ##### Chosen Parameters and Better Alignments Discussion
 
-*Fill me in*
+The biological penalties have no relation to comparing different scriptural texts, so instead of using that, I set different parameters:
+
+```py
+match_award=0
+indel_penalty=1 
+sub_penalty=1
+gap_open_penalty=0
+```
+
+These were the parameters for the isaiah_nephi_unpenalized_equal.txt alignment. I found that making the mismatches equal weight resulted in a better alignment with less sporadic gaps. This is because when comparing scriptural texts, I don't think its more or less likely that that a single character will be replaced, removed or inserted during transcription or translation.
+
+Similarly, it's perfectly reasonable to think that a transcription error could lead someone to delete or insert a single character. For that reason, the gap_open_penalty wasn't as useful in this situation, so I just set it to 0.
+
+These parameters created a much better alignment because they didn't force long gap stretches (although there was a long gap stretch still in a weird spot). They also didn't favor substitutions over deletions, which I think makes it a lot more accurate.
 
 ## Project Review
 
