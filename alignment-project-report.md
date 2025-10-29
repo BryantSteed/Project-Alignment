@@ -647,4 +647,14 @@ These parameters created a much better alignment because they didn't force long 
 
 ## Project Review
 
-*Fill me in*
+Mckenzie Miller and Adam Eubanks on 10/28/2025.
+
+We talked about our different implementations for baseline. They both used composition design patterns to avoid code duplication. I was the only one who made a separate class to avoid passing so many parameters around.
+
+We all got O(mn) for time and space complexity for baseline. Our fundamental logic was pretty similar all around. For Core, we simply used if statements to iterate differently around the theoretical matrix base on the bandwidth given. Avoid code duplication was difficult all around, but they had some really good solution with how they structured their functions to avoid it.
+
+For Stretch 1, we both used a simple script to parse the FASTA file and run alignments. We both got the answer of the rat being the culprit.
+
+I was the only one who had completed stretch 2 up to that point.
+
+All around, we thought it was a cool project. The concept of edit distance is just really interesting. I think its really cool how biologists have been able to take something so theoretical and turn it into something very concretely useful for understanding genetics.
